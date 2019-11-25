@@ -59,6 +59,7 @@ public class BookDataGenerator {
         String line = null;
         while((line = reader.readLine()) != null){
             String[] info = line.split(",");
+
             Book book = new Book();
             book.setId(Integer.parseInt(info[0]));
             book.setBookIsbn(info[1]);

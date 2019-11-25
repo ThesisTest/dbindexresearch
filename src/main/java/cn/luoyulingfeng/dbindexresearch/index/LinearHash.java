@@ -2,13 +2,14 @@ package cn.luoyulingfeng.dbindexresearch.index;
 
 import cn.luoyulingfeng.dbindexresearch.util.HashUtil;
 import cn.luoyulingfeng.dbindexresearch.util.MathUtil;
+import com.alibaba.fastjson.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 线性哈希算法
  */
+@SuppressWarnings("DuplicatedCode")
 public class LinearHash {
 
     private List<Block> blocks;
@@ -63,18 +64,20 @@ public class LinearHash {
         if (averageOccupancy > AVERAGE_OCCUPANCY_RATE_THRESHOLD){
             //添加新桶
             Block newBlock = new Block();
+            blocks.add(newBlock);
 
-            //遍历指定的旧桶，将之前应该分配到该新桶的数据移过来
             int realN = n - (int)Math.pow(2, i-1);
             int j = (int)Math.ceil(MathUtil.log2(n + 1));
             Block currentBlock = blocks.get(realN);
-            while (true){
-                for (int x=0; x<currentBlock.valuesCounter; x++){
+            while(true){
+                for (int x=0; x<currentBlock.values.length; x++){
                     Data data = currentBlock.values[x];
+                    if (data == null){
+                        continue;
+                    }
                     int dataKeyHash = HashUtil.time33(data.key);
                     int dataM = dataKeyHash % (int)Math.pow(2, j);
                     if (dataM == n){
-                        //找到一个不满的桶移入数据
                         finalBlock = findNotFullBlock(newBlock);
                         emptyIndex = findFirstEmptyIndex(finalBlock);
                         finalBlock.values[emptyIndex] = data.copy();
@@ -83,12 +86,11 @@ public class LinearHash {
                         currentBlock.valuesCounter--;
                     }
                 }
-                if (currentBlock.nextBlock == null){
+                if(currentBlock.nextBlock == null){
                     break;
                 }
                 currentBlock = currentBlock.nextBlock;
             }
-            blocks.add(newBlock);
         }
     }
 
@@ -115,7 +117,7 @@ public class LinearHash {
      * @param block
      * @return
      */
-    public int findFirstEmptyIndex(Block block){
+    private int findFirstEmptyIndex(Block block){
         int index = 0;
         for (int i=0; i<block.values.length; i++){
             if (block.values[i] == null){
@@ -127,10 +129,87 @@ public class LinearHash {
     }
 
     /**
+     * 打印索引结构
+     * @return
+     */
+    public List<String> printStructure(){
+        List<String> structure = new ArrayList<>();
+        int id = 0;
+        int subId = 0;
+        int dataCounter = 0;
+        for (Block block: blocks){
+            Block currentBlock = block;
+            subId = 0;
+            StringBuilder builder = new StringBuilder();
+            while (true){
+                builder.append(String.format("block%d_%d:%d ",id, subId++,currentBlock.valuesCounter));
+                dataCounter += currentBlock.valuesCounter;
+                if (currentBlock.nextBlock == null){
+                    break;
+                }
+                currentBlock = currentBlock.nextBlock;
+            }
+            id++;
+            structure.add(builder.toString());
+        }
+        System.out.println(dataCounter);
+        return structure;
+    }
+
+    /**
+     * 根据键值查找符合条件的记录
+     * @param key 键值
+     * @return
+     */
+    public List<Object> find(String key){
+        //获取目标桶
+        int n = blocks.size();//桶的数量
+        int i = (int)Math.ceil(MathUtil.log2(n));//桶的数量换算成二进制需要的位数
+        int k = HashUtil.time33(key);//key的hash值
+        k = k >= 0? k: 0-k;
+
+        List<Object> objectList = new ArrayList<>();
+        Set<Integer> indexSet = new HashSet<>();
+        for (int x=1; x<=i; x++){
+            int m = k % (int)Math.pow(2, x);
+            if (indexSet.contains(m)){
+                continue;
+            }
+            indexSet.add(m);
+
+            //如果计算真桶的下标
+            int realM = m;
+            if (m >= n){
+                realM = m - (int)Math.pow(2, i - 1);
+            }
+            //获取下标为m的桶
+            Block block = blocks.get(realM);
+
+            //遍历该桶及其溢出桶，收集符合条件的数据
+            while (true){
+                for (int y=0; y<block.values.length; y++){
+                    Data data = block.values[y];
+                    if (data == null){
+                        continue;
+                    }
+                    if (data.key.equals(key)){
+                        objectList.add(data.value);
+                    }
+                }
+                if (block.nextBlock == null){
+                    break;
+                }
+                block = block.nextBlock;
+            }
+        }
+        return objectList;
+    }
+
+    /**
      * 数据桶
      */
     public static class Block{
-        public static final int BLOCK_SIZE = 1024;
+        public static final int BLOCK_SIZE = 4096;
         public Data[] values = new Data[BLOCK_SIZE];
         public int valuesCounter;
         public Block nextBlock;
