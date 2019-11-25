@@ -40,17 +40,9 @@ public class LinearHash {
 
         int n = blocks.size();//桶的数量
         int i = (int)Math.ceil(MathUtil.log2(n));//桶的数量换算成二进制需要的位数
-        int k = HashUtil.time33(key);//key的hash值
-        k = k >= 0? k: 0-k;
-        int m = k % (int)Math.pow(2, i);//逻辑桶下标
-
-        //如果计算真桶的下标
-        int realM = m;
-        if (m >= n){
-            realM = m - (int)Math.pow(2, i - 1);
-        }
+        int m = hash(key, n);
         //获取下标为m的桶
-        Block block = blocks.get(realM);
+        Block block = blocks.get(m);
 
         //循环，直到找到一个没有装满的桶
         Block finalBlock = findNotFullBlock(block);
@@ -162,28 +154,17 @@ public class LinearHash {
      * @return
      */
     public List<Object> find(String key){
-        //获取目标桶
-        int n = blocks.size();//桶的数量
-        int i = (int)Math.ceil(MathUtil.log2(n));//桶的数量换算成二进制需要的位数
-        int k = HashUtil.time33(key);//key的hash值
-        k = k >= 0? k: 0-k;
-
         List<Object> objectList = new ArrayList<>();
         Set<Integer> indexSet = new HashSet<>();
-        for (int x=1; x<=i; x++){
-            int m = k % (int)Math.pow(2, x);
+        for (int x=2; x<=blocks.size(); x++){
+            int m = hash(key, x);
             if (indexSet.contains(m)){
                 continue;
             }
             indexSet.add(m);
 
-            //如果计算真桶的下标
-            int realM = m;
-            if (m >= n){
-                realM = m - (int)Math.pow(2, i - 1);
-            }
             //获取下标为m的桶
-            Block block = blocks.get(realM);
+            Block block = blocks.get(m);
 
             //遍历该桶及其溢出桶，收集符合条件的数据
             while (true){
@@ -203,6 +184,26 @@ public class LinearHash {
             }
         }
         return objectList;
+    }
+
+    /**
+     * 线性哈希函数
+     * @param key 键值
+     * @param n 哈希桶数量
+     * @return
+     */
+    private int hash(String key, int n){
+        int i = (int)Math.ceil(MathUtil.log2(n));//桶的数量换算成二进制需要的位数
+        int k = HashUtil.time33(key);//key的hash值
+        k = k >= 0? k: 0-k;
+        int m = k % (int)Math.pow(2, i);//逻辑桶下标
+
+        //如果计算真桶的下标
+        int realM = m;
+        if (m >= n){
+            realM = m - (int)Math.pow(2, i - 1);
+        }
+        return realM;
     }
 
     /**
