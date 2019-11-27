@@ -11,19 +11,25 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
-import java.util.Map;
 
-public class LinearHashTests {
+public class ExtendibleHashTests {
 
-    private static LinearHash linearHash;
+    private static ExtendibleHash extendibleHash;
 
     @BeforeAll
     public static void init(){
-        linearHash = new LinearHash();
+        extendibleHash = new ExtendibleHash();
     }
 
+    @Test
+    public void testInsert(){
+        Integer[] ids = {16, 4, 6, 22, 24, 10, 31, 7, 9, 20, 26};
+        for (int id: ids){
+            extendibleHash.insert(id+"", id);
+        }
+        System.out.println(extendibleHash.structure());
+    }
 
     @Test
     public void testInsertStudent()throws IOException {
@@ -31,12 +37,15 @@ public class LinearHashTests {
         long start = System.currentTimeMillis();
         for (int i=0; i<students.size(); i++){
             Student student = students.get(i);
-            linearHash.insert(student.getStuNo(), i);
+            extendibleHash.insert(student.getStuAge()+"", i);
         }
         long end = System.currentTimeMillis();
         System.out.printf("time cost: %fms\n", (end - start)/1f);
-        String structure = linearHash.structure();
+        String structure = extendibleHash.structure();
         System.out.println(structure);
+
+        List<Object> result = extendibleHash.find("20");
+        System.out.println(result);
     }
 
     @Test
@@ -45,16 +54,19 @@ public class LinearHashTests {
         long start = System.currentTimeMillis();
         for (int i=0; i<records.size(); i++){
             BookBorrowRecord record = records.get(i);
-            linearHash.insert(record.getPersonNo(), i);
+            extendibleHash.insert(record.getPersonNo(), i);
         }
         long end = System.currentTimeMillis();
         System.out.printf("time cost: %fms\n", (end - start)/1f);
-        String structure = linearHash.structure();
+        String structure = extendibleHash.structure();
         System.out.println(structure);
+
+        List<Object> result = extendibleHash.find("154987534");
+        System.out.println(result);
     }
 
     @Test
-    public void testInsertBook()throws IOException {
+    public void testInsertBook()throws IOException{
         List<Book> books = BookDataGenerator.load("csvdata/Books.csv");
         long start = System.currentTimeMillis();
         int cnt = 0;
@@ -64,11 +76,11 @@ public class LinearHashTests {
 
             cnt++;
             System.out.printf("%.2f%%\n", cnt*1f/size*100);
-            linearHash.insert(book.getBookIsbn(), i);
+            extendibleHash.insert(book.getBookIsbn(), i);
         }
         long end = System.currentTimeMillis();
         System.out.printf("time cost: %fms\n", (end - start)/1f);
-        String structure = linearHash.structure();
+        String structure = extendibleHash.structure();
         System.out.println(structure);
     }
 

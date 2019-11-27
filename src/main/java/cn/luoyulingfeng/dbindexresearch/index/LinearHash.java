@@ -2,6 +2,7 @@ package cn.luoyulingfeng.dbindexresearch.index;
 
 import cn.luoyulingfeng.dbindexresearch.util.HashUtil;
 import cn.luoyulingfeng.dbindexresearch.util.MathUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.*;
@@ -9,7 +10,7 @@ import java.util.*;
 /**
  * 线性哈希算法
  */
-@SuppressWarnings("DuplicatedCode")
+@SuppressWarnings({"DuplicatedCode", "Duplicates"})
 public class LinearHash {
 
     private List<Block> blocks;
@@ -21,14 +22,6 @@ public class LinearHash {
         blocks = new ArrayList<>();
         blocks.add(new Block());
         blocks.add(new Block());
-    }
-
-    public List<Block> getBlocks() {
-        return blocks;
-    }
-
-    public int getTotalKeys() {
-        return totalKeys;
     }
 
     /**
@@ -124,28 +117,25 @@ public class LinearHash {
      * 打印索引结构
      * @return
      */
-    public List<String> printStructure(){
-        List<String> structure = new ArrayList<>();
-        int id = 0;
-        int subId = 0;
-        int dataCounter = 0;
-        for (Block block: blocks){
-            Block currentBlock = block;
-            subId = 0;
-            StringBuilder builder = new StringBuilder();
-            while (true){
-                builder.append(String.format("block%d_%d:%d ",id, subId++,currentBlock.valuesCounter));
-                dataCounter += currentBlock.valuesCounter;
+    public String structure(){
+        JSONArray blockArray = new JSONArray();
+        for (int i=0; i<blocks.size(); i++){
+            JSONArray currentArray = new JSONArray();
+            int j = 0;
+            Block currentBlock = blocks.get(i);
+            while(true){
+                JSONObject blockInfo = new JSONObject();
+                blockInfo.put("name", String.format("bucket%d-%d", i, j++));
+                blockInfo.put("values", currentBlock.valuesCounter);
+                currentArray.add(blockInfo);
                 if (currentBlock.nextBlock == null){
                     break;
                 }
                 currentBlock = currentBlock.nextBlock;
             }
-            id++;
-            structure.add(builder.toString());
+            blockArray.add(currentArray);
         }
-        System.out.println(dataCounter);
-        return structure;
+        return blockArray.toJSONString();
     }
 
     /**
