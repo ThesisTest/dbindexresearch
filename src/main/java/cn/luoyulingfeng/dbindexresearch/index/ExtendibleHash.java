@@ -129,6 +129,26 @@ public class ExtendibleHash {
         return objectList;
     }
 
+    /**
+     * 删除指定键值的数据
+     * @param key 键值
+     */
+    public void delete(String key){
+        int index = hash(key);
+        int bucketIndex = directory.bucketIndecies[index] - 1;
+        Bucket bucket = buckets.get(bucketIndex);
+        for (int i=0; i<bucket.values.length; i++){
+            Data data = bucket.values[i];
+            if (data == null){
+                continue;
+            }
+            if (data.key.equals(key)){
+                bucket.values[i] = null;
+                bucket.valuesCounter--;
+            }
+        }
+    }
+
 
     public int hash(String key){
         int val = HashUtil.time33(key);

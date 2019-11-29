@@ -177,6 +177,43 @@ public class LinearHash {
     }
 
     /**
+     * 删除某个键值对应数据
+     * @param key 键值
+     */
+    public void delete(String key){
+        Set<Integer> indexSet = new HashSet<>();
+        for (int x=2; x<=blocks.size(); x++){
+            int m = hash(key, x);
+            if (indexSet.contains(m)){
+                continue;
+            }
+            indexSet.add(m);
+
+            //获取下标为m的桶
+            Block block = blocks.get(m);
+
+            //遍历该桶及其溢出桶，收集符合条件的数据
+            while (true){
+                for (int y=0; y<block.values.length; y++){
+                    Data data = block.values[y];
+                    if (data == null){
+                        continue;
+                    }
+                    if (data.key.equals(key)){
+                        block.values[y] = null;
+                        block.valuesCounter--;
+                        totalKeys--;
+                    }
+                }
+                if (block.nextBlock == null){
+                    break;
+                }
+                block = block.nextBlock;
+            }
+        }
+    }
+
+    /**
      * 线性哈希函数
      * @param key 键值
      * @param n 哈希桶数量

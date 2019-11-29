@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * B+树算法
  */
+@SuppressWarnings("Duplicates")
 public class BPlusTree {
 
     private static final String NODE = "NODE";
@@ -309,6 +310,515 @@ public class BPlusTree {
             }
         }
     }
+
+    /**
+     * 搜索符合条件的数据
+     * @param key 键值
+     * @param node 节点
+     * @param mode 模式
+     * @return
+     */
+    private Object search(String key, Node node, String mode) {
+
+        //如果是叶子节点则直接取值
+        if (node.isLeaf()) {
+            List<Data> dataList = node.dataList;
+            for (Data data : dataList) {
+                if (data.key.equals(key)) {
+                    switch (mode) {
+                        case NODE:
+                            return node;
+                        case INT:
+                            return data.value;
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        List<Node> nodes = node.children;
+        //如果寻找的key小于节点的键的最小值
+        String minKey = node.dataList.get(0).key;
+        if (key.compareTo(minKey) < 0) {
+            for (Node n : nodes) {
+                List<Data> dataList = n.dataList;
+                //找到子节点集合中最大键小于父节点最小键节点
+                if (dataList.get(dataList.size() - 1).key.compareTo(minKey) < 0) {
+                    return search(key, n, mode);
+                }
+            }
+        }
+
+        //如果寻找的key大于节点的键的最大值
+        String maxKey = getMaxKeyInNode(node);
+        if (key.compareTo(maxKey) >= 0) {
+            for (Node n : nodes) {
+                List<Data> dataList = n.dataList;
+                //找到子节点集合中最小键大于等于父节点最小大键节点
+                if (dataList.get(0).key.compareTo(maxKey) >= 0) {
+                    return search(key, n, mode);
+                }
+            }
+        }
+
+        //如果寻找的key在最大值和最小值之间，首先定位到最窄的区间
+        String min = getLeftBoundOfKey(node, key);
+        String max = getRightBoundOfKey(node, key);
+
+
+        //去所有的子节点中找键的范围在min和max之间的节点
+        for (Node n : nodes) {
+            List<Data> dataList = n.dataList;
+            //找到子节点集合中键的范围在min和max之间的节点
+            if (dataList.get(0).key.compareTo(min) >= 0 && dataList.get(dataList.size() - 1).key.compareTo(max) < 0) {
+                return search(key, n, mode);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取node中最小的键
+     * @param node 节点
+     * @return
+     */
+    private String getMinKeyInNode(Node node) {
+        List<Data> keyAndValues = node.dataList;
+        return keyAndValues.get(0).key;
+    }
+
+    /**
+     * 获取节点中最大的键
+     * @param node 节点
+     * @return
+     */
+    private String getMaxKeyInNode(Node node) {
+        List<Data> dataList = node.dataList;
+        return dataList.get(dataList.size() - 1).key;
+    }
+
+    /**
+     * 获取key左边相邻和键值
+     * @param node 节点
+     * @param key 键值
+     * @return
+     */
+    private String getLeftBoundOfKey(Node node, String key) {
+        String left = "";
+        List<Data> dataList = node.dataList;
+        for (int i = 0; i < dataList.size(); i++) {
+            if (dataList.get(i).key.compareTo(key) <= 0 && dataList.get(i + 1).key.compareTo(key) > 0) {
+                left = dataList.get(i).key;
+                break;
+            }
+        }
+        return left;
+    }
+
+    /**
+     * 获取key右边相邻的键值
+     * @param node 节点
+     * @param key 键值
+     * @return
+     */
+    private String getRightBoundOfKey(Node node, String key) {
+        String right = "";
+        List<Data> dataList = node.dataList;
+        for (int i = 0; i < dataList.size(); i++) {
+            if (dataList.get(i).key.compareTo(key) <= 0 && dataList.get(i + 1).key.compareTo(key) > 0) {
+                right = dataList.get(i + 1).key;
+                break;
+            }
+        }
+        return right;
+    }
+
+    /**
+     * @param key
+     * @return
+     */
+    public boolean delete(String key) {
+
+        //首先找到要删除的key所在的节点
+        Node deleteNode = (Node) search(key, root, NODE);
+        //如果没找到则删除失败
+        if (deleteNode == null) {
+            return false;
+        }
+
+        if (deleteNode == root) {
+            delKeyAndValue(root.dataList, key);
+            return true;
+        }
+
+        if (deleteNode == head && isNeedMerge(head)) {
+            head = head.nextNode;
+        }
+
+        return merge(deleteNode, key);
+    }
+
+    /**
+     * 判断节点是否需要合并
+     * @param node 节点
+     * @return
+     */
+    private boolean isNeedMerge(Node node) {
+        if (node == null) {
+            return false;
+        }
+        List<Data> dataList = node.dataList;
+        return dataList.size() < rank / 2;
+    }
+
+    /**
+     * 删除数据
+     * @param dataList 数据列表
+     * @param key 键值
+     */
+    private void delKeyAndValue(List<Data> dataList, String key) {
+        for (Data data : dataList) {
+            if (data.key.equals(key)) {
+                dataList.remove(data);
+                break;
+            }
+        }
+    }
+
+    private boolean merge(Node node, String key) {
+        List<Data> dataList = node.dataList;
+
+        //首先删除该key-vaule
+        delKeyAndValue(dataList, key);
+        //如果要删除的节点的键值对的数目小于节点最大键值对数目*填充因子
+        if (isNeedMerge(node)) {
+            Boolean isBalance;
+
+            //如果左节点有富余的键值对，则取一个到当前节点
+            Node preNode = getPreviousNode(node);
+            isBalance = balanceNode(node, preNode, PRE_NODE);
+
+            //如果此时已经平衡，则已经删除成功
+            if (isBalance)
+                return true;
+
+            //如果右兄弟节点有富余的键值对，则取一个到当前节点
+            Node nextNode = getNextNode(node);
+            isBalance = balanceNode(node, nextNode, NEXT_NODE);
+
+            return isBalance || mergeNode(node, key);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * 获取node前面的节点
+     * @param node 节点
+     * @return
+     */
+    private Node getPreviousNode(Node node) {
+        if (node.isRoot()) {
+            return null;
+        }
+
+        Node parentNode = node.parentNode;
+
+        //得到兄弟节点
+        List<Node> nodes = parentNode.children;
+        List<Data> dataList = new ArrayList<>();
+        for (Node n : nodes) {
+            List<Data> list = n.dataList;
+            String maxKey = list.get(list.size() - 1).key;
+            if (maxKey.compareTo(getMinKeyInNode(node)) < 0) {
+                dataList.add(new Data(maxKey, n));
+            }
+        }
+        Collections.sort(dataList);
+        if (dataList.isEmpty()) {
+            return null;
+        }
+        return (Node) dataList.get(dataList.size() - 1).value;
+    }
+
+
+    /**
+     * 获取node之前的节点
+     * @param node 节点
+     * @return
+     */
+    private Node getNextNode(Node node) {
+        if (node.isRoot()) {
+            return null;
+        }
+
+        Node parentNode = node.parentNode;
+        //得到兄弟节点
+        List<Node> nodes = parentNode.children;
+        List<Data> dataList = new ArrayList<>();
+        for (Node n : nodes) {
+            List<Data> list = n.dataList;
+            String minKey = list.get(0).key;
+            if (minKey.compareTo(getMaxKeyInNode(node)) > 0) {
+                dataList.add(new Data(minKey, n));
+            }
+        }
+        Collections.sort(dataList);
+        if (dataList.isEmpty()) {
+            return null;
+        }
+        return (Node) dataList.get(0).value;
+    }
+
+
+    /**
+     * 平衡node节点机器兄弟节点
+     * @param node 节点
+     * @param brotherNode 兄弟节点
+     * @param nodeType 节点类型
+     * @return
+     */
+    private boolean balanceNode(Node node, Node brotherNode, String nodeType) {
+        if (brotherNode == null) {
+            return false;
+        }
+
+        List<Data> dataList = node.dataList;
+        if (isMoreElement(brotherNode)) {
+            List<Data> brotherDataList = brotherNode.dataList;
+            int brotherSize = brotherDataList.size();
+
+            //兄弟节点删除挪走的键值对
+            Data data = null;
+            Data data1 = null;
+            switch (nodeType) {
+                case PRE_NODE:
+                    data = brotherDataList.remove(brotherSize - 1);
+                    data1 = getDataInMinAndMax(node.parentNode, data.key, getMinKeyInNode(node));
+                    data1.key = data.key;
+                    break;
+                case NEXT_NODE:
+                    data = brotherDataList.remove(0);
+                    data1 = getDataInMinAndMax(node.parentNode, getMaxKeyInNode(node), data.key);
+                    data1.key = brotherDataList.get(0).key;
+                    break;
+            }
+            //当前节点添加从前一个节点得来的键值对
+            dataList.add(data);
+
+            //对键值对重排序
+            Collections.sort(dataList);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断一个节点是否有富余的键值对
+     * @param node 节点
+     * @return
+     */
+    private boolean isMoreElement(Node node) {
+        return node != null && (node.dataList.size() > rank / 2);
+    }
+
+    /**
+     * 找到node的键值对中在min和max中的键值对
+     * @param node 节点
+     * @param min 最小键值
+     * @param max 最大键值
+     * @return
+     */
+    private Data getDataInMinAndMax(Node node, String min, String max) {
+        if (node == null) {
+            return null;
+        }
+        List<Data> dataList = node.dataList;
+        Data data = null;
+        for (Data d : dataList) {
+            if (d.key.compareTo(min) > 0 && d.key.compareTo(max) <= 0) {
+                data = d;
+                break;
+            }
+        }
+        return data;
+    }
+
+    /**
+     * 合并节点
+     * @param node 节点
+     * @param key 键值
+     * @return
+     */
+    private boolean mergeNode(Node node, String key) {
+        if (node.isRoot()) {
+            return false;
+        }
+        Node preNode;
+        Node nextNode;
+        Node parentNode = node.parentNode;
+        List<Node> childNodes = parentNode.children;
+        List<Node> childNodes1 = node.children;
+        List<Data> parentKeyAndValue = parentNode.dataList;
+        List<Data> keyAndValues = node.dataList;
+
+        if (node.isLeaf()) {
+            if (parentKeyAndValue.size() == 1 && parentNode != root) {
+                return true;
+            }
+            preNode = getPreviousNode(node);
+            nextNode = getNextNode(node);
+            if (preNode != null) {
+                List<Data> preKeyAndValues = preNode.dataList;
+                keyAndValues.addAll(preKeyAndValues);
+                if (preNode.isHead()) {
+                    head = node;
+                    node.previousNode = null;
+                } else {
+                    preNode.previousNode.nextNode = node;
+                    node.previousNode = preNode.previousNode;
+                }
+                //将合并后节点的后节点设置为当前节点的后节点
+                preNode.nextNode = node.nextNode;
+                Data keyAndValue = getDataInMinAndMax(parentNode, getMinKeyInNode(preNode), key);
+                delKeyAndValue(parentKeyAndValue, keyAndValue.key);
+                if (parentKeyAndValue.isEmpty()) {
+                    root = node;
+                } else {
+                    //删除当前节点
+                    childNodes.remove(preNode);
+                }
+                Collections.sort(keyAndValues);
+                merge(parentNode, key);
+                return true;
+            }
+
+            if (nextNode != null) {
+                List<Data> nextKeyAndValues = nextNode.dataList;
+                keyAndValues.addAll(nextKeyAndValues);
+                if (nextNode.isTail()) {
+                    node.previousNode = null;
+                } else {
+                    nextNode.nextNode.previousNode = node;
+                    node.nextNode = nextNode.nextNode;
+                }
+
+                Data keyAndValue = getDataInMinAndMax(parentNode, key, getMinKeyInNode(nextNode));
+                delKeyAndValue(parentKeyAndValue, keyAndValue.key);
+                if (parentKeyAndValue.isEmpty()) {
+                    root = node;
+                    node.parentNode = null;
+                } else {
+                    //删除当前节点
+                    childNodes.remove(nextNode);
+                }
+                Collections.sort(keyAndValues);
+                merge(parentNode, key);
+                return true;
+            }
+            //前节点和后节点都等于null那么是root节点
+            return false;
+        } else {
+            preNode = getPreviousNode(node);
+            nextNode = getNextNode(node);
+            if (preNode != null) {
+                //将前一个节点和当前节点还有父节点中的相应Key-value合并
+                List<Data> preKeyAndValues = preNode.dataList;
+                preKeyAndValues.addAll(keyAndValues);
+                String min = getMaxKeyInNode(preNode);
+                String max = getMinKeyInNode(node);
+
+                //父节点中移除这个key-value
+                Data keyAndValue = getDataInMinAndMax(parentNode, min, max);
+                parentKeyAndValue.remove(keyAndValue);
+                if (parentKeyAndValue.isEmpty()) {
+                    root = preNode;
+                    node.parentNode = null;
+                    preNode.parentNode = null;
+                } else {
+                    childNodes.remove(node);
+                }
+                assert nextNode != null;
+                preNode.nextNode = nextNode.nextNode;
+
+                //前节点加上一个当前节点的所有子节点中最小key的key-value
+                Data minKeyAndValue = getMinDataInChildNode(node);
+                assert minKeyAndValue != null;
+                Data keyAndValue1 = new Data(minKeyAndValue.key, minKeyAndValue.value);
+                preKeyAndValues.add(keyAndValue1);
+                List<Node> preChildNodes = preNode.children;
+                preChildNodes.addAll(node.children);
+
+                //将当前节点的孩子节点的父节点设为当前节点的后节点
+                for (Node node1 : childNodes1) {
+                    node1.parentNode = preNode;
+                }
+                Collections.sort(preKeyAndValues);
+                merge(parentNode, key);
+                return true;
+            }
+
+            if (nextNode != null) {
+                //将后一个节点和当前节点还有父节点中的相应Key-value合并
+                List<Data> nextKeyAndValues = nextNode.dataList;
+                nextKeyAndValues.addAll(keyAndValues);
+
+                String min = getMaxKeyInNode(node);
+                String max = getMinKeyInNode(nextNode);
+                //父节点中移除这个key-value
+                Data keyAndValue = getDataInMinAndMax(parentNode, min, max);
+                parentKeyAndValue.remove(keyAndValue);
+                childNodes.remove(node);
+                if (parentKeyAndValue.isEmpty()) {
+                    root = nextNode;
+                    nextNode.parentNode = null;
+                } else {
+                    childNodes.remove(node);
+                }
+                nextNode.previousNode = node.previousNode;
+
+                //后节点加上一个当后节点的所有子节点中最小key的key-value
+                Data minKeyAndValue = getMinDataInChildNode(nextNode);
+                assert minKeyAndValue != null;
+                Data keyAndValue1 = new Data(minKeyAndValue.key, minKeyAndValue.value);
+                nextKeyAndValues.add(keyAndValue1);
+                List<Node> nextChildNodes = nextNode.children;
+                nextChildNodes.addAll(node.children);
+
+                //将当前节点的孩子节点的父节点设为当前节点的后节点
+                for (Node node1 : childNodes1) {
+                    node1.parentNode = nextNode;
+                }
+                Collections.sort(nextKeyAndValues);
+                merge(parentNode, key);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * 获取节点中的最小数据
+     * @param node 节点
+     * @return
+     */
+    private Data getMinDataInChildNode(Node node) {
+        if (node.children == null || node.children.isEmpty()) {
+            return null;
+        }
+        List<Data> sortKeyAndValues = new ArrayList<>();
+        List<Node> childNodes = node.children;
+        for (Node childNode : childNodes) {
+            List<Data> keyAndValues = childNode.dataList;
+            Data minKeyAndValue = keyAndValues.get(0);
+            sortKeyAndValues.add(minKeyAndValue);
+        }
+        Collections.sort(sortKeyAndValues);
+        return sortKeyAndValues.get(0);
+    }
+
+
 
     /*节点类*/
     public static class Node {

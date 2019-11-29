@@ -1,7 +1,12 @@
 package cn.luoyulingfeng.dbindexresearch.index;
 
+import cn.luoyulingfeng.dbindexresearch.data.StudentDataGenerator;
+import cn.luoyulingfeng.dbindexresearch.model.Student;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 public class BPlusTreeTests {
 
@@ -9,7 +14,7 @@ public class BPlusTreeTests {
 
     @BeforeAll
     public static void init(){
-        tree = new BPlusTree(5);
+        tree = new BPlusTree(100);
     }
 
     @Test
@@ -20,12 +25,18 @@ public class BPlusTreeTests {
             tree.insert(data+"", data);
             tree.printBtree(tree.getRoot());
         }
-
-        System.out.println(tree.find("16", "48"));
     }
 
     @Test
-    public void testInsertStudent(){
-
+    public void testInsertStudent()throws IOException {
+        List<Student> students = StudentDataGenerator.load("csvdata/Students.csv");
+        long start = System.currentTimeMillis();
+        for (int i=0; i<students.size(); i++){
+            Student student = students.get(i);
+            tree.insert(student.getStuNo(), i);
+        }
+        long end = System.currentTimeMillis();
+        System.out.printf("time cost: %fms\n", (end - start)/1f);
+        tree.printBtree(tree.getRoot());
     }
 }
