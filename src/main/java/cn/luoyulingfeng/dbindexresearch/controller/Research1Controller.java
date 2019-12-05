@@ -24,6 +24,7 @@ public class Research1Controller {
     private static List<String> bookNameList = null;
     static {
         bookNameList = BookDataGenerator.loadNames();
+        System.out.println("BookNameList Size:" + bookNameList.size());
     }
 
     @PostMapping(value = "/insert")
@@ -82,22 +83,28 @@ public class Research1Controller {
     }
 
     @PostMapping(value = "/delete")
-    public JsonResult delete(@RequestParam String bookName){
+    public JsonResult delete(@RequestParam int num){
         DeleteResult result = new DeleteResult();
 
         long start, end;
         start = System.currentTimeMillis();
-        linearHash.delete(bookName);
+        for (int i=0; i<num; i++){
+            linearHash.delete(bookNameList.get(i));
+        }
         end = System.currentTimeMillis();
         result.linearHashTime = (end - start)/1f;
 
         start = System.currentTimeMillis();
-        extendibleHash.delete(bookName);
+        for (int i=0; i<num; i++){
+            extendibleHash.delete(bookNameList.get(i));
+        }
         end = System.currentTimeMillis();
         result.extendibleHashTime = (end - start)/1f;
 
         start = System.currentTimeMillis();
-        bPlusTree.delete(bookName);
+        for (int i=0; i<num; i++){
+            bPlusTree.delete(bookNameList.get(i));
+        }
         end = System.currentTimeMillis();
         result.bPlusTreeTime = (end - start)/1f;
 

@@ -2,6 +2,7 @@ body{
     width: 100%;
     height: 800px;
     margin: 0 0 0 0;
+    background-color: #eeeeee;
 }
 
 #headDiv{
@@ -15,7 +16,6 @@ body{
 #divLeftTop{
     width: 45%;
     height: 450px;
-    background-color: #ff0000;
     float: left;
     margin-left: 40px;
     margin-top: 30px;
@@ -24,7 +24,6 @@ body{
 #divRightTop{
     width: 45%;
     height: 450px;
-    background-color: #00ff00;
     float: right;
     margin-right: 40px;
     margin-top: 30px;
@@ -33,7 +32,6 @@ body{
 #divLeftBottom{
     width: 45%;
     height: 450px;
-    background-color: #0000ff;
     float: left;
     margin-left: 40px;
     margin-top: 30px;
@@ -42,8 +40,11 @@ body{
 #divRightBottom{
     width: 45%;
     height: 450px;
-    background-color: #000000;
     float: right;
     margin-right: 40px;
     margin-top: 30px;
+}
+
+#insertDiv{
+    margin-top: 50px;
 }
