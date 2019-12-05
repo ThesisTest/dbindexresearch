@@ -10,8 +10,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,4 +72,14 @@ public class LinearHashTests {
         System.out.println(structure);
     }
 
+    @Test
+    public void testReadAllLines()throws IOException{
+        BufferedReader reader = new BufferedReader(new FileReader("csvdata/BooksName.txt"));
+        String line = null;
+        List<String> names = new ArrayList<>(10000000);
+        while ((line = reader.readLine()) != null){
+            names.add(line);
+        }
+        reader.close();
+    }
 }

@@ -16,9 +16,10 @@ public class BookDataGenerator {
      * @param num
      */
     public static void generate(int num)throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter("Books.csv"));
+        BufferedWriter writer = new BufferedWriter(new FileWriter("csvdata/Books.csv"));
         Random random = new Random();
         String[] series = {"计算机丛书", "文学丛书", "软件丛书", "美术丛书", "音乐丛书", "外语丛书"};
+        BufferedWriter writer2 = new BufferedWriter(new FileWriter("csvdata/BookSeries.txt"));
 
         long start = System.currentTimeMillis();
         int cnt = 0;
@@ -42,9 +43,13 @@ public class BookDataGenerator {
             book.setBookStatus(random.nextInt(2));
             writer.write(book.toString());
             writer.newLine();
+            writer2.write(book.getBookSeries());
+            writer2.newLine();
         }
         writer.flush();
         writer.close();
+        writer2.flush();
+        writer2.close();
         long end = System.currentTimeMillis();
         System.out.printf("time cost: %fs\n", (end - start)/1e3);
     }
@@ -78,5 +83,21 @@ public class BookDataGenerator {
         }
         reader.close();
         return books;
+    }
+
+    public static List<String> loadNames(){
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("csvdata/BooksName.txt"));
+            String line = null;
+            List<String> names = new ArrayList<>(10000000);
+            while ((line = reader.readLine()) != null){
+                names.add(line);
+            }
+            reader.close();
+            return names;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 }
