@@ -1,4 +1,6 @@
-var insertUrl = '/research1/';
+var insertUrl = '/research1/insert';
+var searchUrl = '/research1/search';
+var deleteUrl = '/research1/delete';
 
 layui.use(['layer', 'element'], function () {
     var layer = layui.layer;
@@ -86,7 +88,7 @@ layui.use(['layer', 'element'], function () {
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ms)'
+                name: '时间(单位ns)'
             }
         ],
         series: [
@@ -166,6 +168,80 @@ layui.use(['layer', 'element'], function () {
 
     //插入1000条数据
     $("#insert1000").click(function () {
+        $.post(insertUrl, {num: 10}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert1000").attr("disabled", "disabled");
+            }
+        });
+    });
 
+    //插入1w条数据
+    $("#insert1w").click(function () {
+        $.post(insertUrl, {num: 100}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert1w").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入10w条数据
+    $("#insert10w").click(function () {
+        $.post(insertUrl, {num: 1000}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert10w").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入100w条数据
+    $("#insert100w").click(function () {
+        $.post(insertUrl, {num: 10000}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert100w").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入1000w条数据
+    $("#insert1000w").click(function () {
+        $.post(insertUrl, {num: 100000}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert1000w").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    $("#search").click(function () {
+        $.post(searchUrl, {bookName:'图书1000'}, function (res) {
+            if (res.code === 0){
+                searchOption.series[0].data.push(res.data.linearHashTime);
+                searchOption.series[1].data.push(res.data.extensibleHashTime);
+                searchOption.series[2].data.push(res.data.bPlusTreeTime);
+                searchChart.setOption(searchOption);
+                console.log("linear hash:" + res.data.linearHashResults);
+                console.log("extensible hash:" + res.data.extensibleHashResults);
+                console.log("B+ tree index:" + res.data.bPlusTreeResults);
+            }
+        });
     });
 });

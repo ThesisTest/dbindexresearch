@@ -29,6 +29,8 @@ public class Research1Controller {
 
     @PostMapping(value = "/insert")
     public JsonResult insert(@RequestParam int num){
+        System.out.println("insert: "+ num);
+
         linearHash = new LinearHash();
         extendibleHash = new ExtendibleHash();
         bPlusTree = new BPlusTree(100);
@@ -47,7 +49,7 @@ public class Research1Controller {
             extendibleHash.insert(bookNameList.get(i), i);
         }
         end = System.currentTimeMillis();
-        result.extendibleHashTime = (end - start)/1f;
+        result.extensibleHashTime = (end - start)/1f;
 
         start = System.currentTimeMillis();
         for (int i=0; i<num; i++){
@@ -56,34 +58,40 @@ public class Research1Controller {
         end = System.currentTimeMillis();
         result.bPlusTreeTime = (end - start)/1f;
 
+        System.out.println("insert exit");
         return new InfoJsonResult(0, "success", result);
     }
 
     @PostMapping(value = "/search")
     public JsonResult search(@RequestParam String bookName){
+        System.out.println("search: " + bookName);
+
         SearchResult result = new SearchResult();
         long start, end;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         result.linearHashResults = linearHash.find(bookName);
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.linearHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
-        result.extendibleHashResults = extendibleHash.find(bookName);
-        end = System.currentTimeMillis();
-        result.extendibleHashTime = (end - start)/1f;
+        start = System.nanoTime();
+        result.extensibleHashResults = extendibleHash.find(bookName);
+        end = System.nanoTime();
+        result.extensibleHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         result.bPlusTreeResults = bPlusTree.find(bookName);
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.bPlusTreeTime = (end - start)/1f;
 
+        System.out.println("search exit");
         return new InfoJsonResult(0, "success", result);
     }
 
     @PostMapping(value = "/delete")
     public JsonResult delete(@RequestParam int num){
+        System.out.println("delete: " + num);
+
         DeleteResult result = new DeleteResult();
 
         long start, end;
@@ -99,7 +107,7 @@ public class Research1Controller {
             extendibleHash.delete(bookNameList.get(i));
         }
         end = System.currentTimeMillis();
-        result.extendibleHashTime = (end - start)/1f;
+        result.extensibleHashTime = (end - start)/1f;
 
         start = System.currentTimeMillis();
         for (int i=0; i<num; i++){
@@ -108,28 +116,29 @@ public class Research1Controller {
         end = System.currentTimeMillis();
         result.bPlusTreeTime = (end - start)/1f;
 
+        System.out.println("delete exit");
         return new InfoJsonResult(0, "success", result);
     }
 
 
     private static class InsertResult{
         public float linearHashTime;
-        public float extendibleHashTime;
+        public float extensibleHashTime;
         public float bPlusTreeTime;
     }
 
     private static class SearchResult{
         public float linearHashTime;
-        public float extendibleHashTime;
+        public float extensibleHashTime;
         public float bPlusTreeTime;
         public List<Object> linearHashResults;
-        public List<Object> extendibleHashResults;
+        public List<Object> extensibleHashResults;
         public List<Object> bPlusTreeResults;
     }
 
     private static class DeleteResult{
         public float linearHashTime;
-        public float extendibleHashTime;
+        public float extensibleHashTime;
         public float bPlusTreeTime;
     }
 }
