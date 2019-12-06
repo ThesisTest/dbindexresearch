@@ -37,25 +37,25 @@ public class Research1Controller {
         InsertResult result = new InsertResult();
 
         long start, end;
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
-            linearHash.insert(bookNameList.get(i), i);
+            linearHash.insert(bookNameList.get(i), i + 1);
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.linearHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
-            extendibleHash.insert(bookNameList.get(i), i);
+            extendibleHash.insert(bookNameList.get(i), i + 1);
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.extensibleHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
-            bPlusTree.insert(bookNameList.get(i), i);
+            bPlusTree.insert(bookNameList.get(i), i + 1);
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.bPlusTreeTime = (end - start)/1f;
 
         System.out.println("insert exit");
@@ -95,25 +95,25 @@ public class Research1Controller {
         DeleteResult result = new DeleteResult();
 
         long start, end;
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
             linearHash.delete(bookNameList.get(i));
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.linearHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
             extendibleHash.delete(bookNameList.get(i));
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.extensibleHashTime = (end - start)/1f;
 
-        start = System.currentTimeMillis();
+        start = System.nanoTime();
         for (int i=0; i<num; i++){
             bPlusTree.delete(bookNameList.get(i));
         }
-        end = System.currentTimeMillis();
+        end = System.nanoTime();
         result.bPlusTreeTime = (end - start)/1f;
 
         System.out.println("delete exit");

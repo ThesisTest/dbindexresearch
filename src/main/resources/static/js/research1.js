@@ -238,9 +238,78 @@ layui.use(['layer', 'element'], function () {
                 searchOption.series[1].data.push(res.data.extensibleHashTime);
                 searchOption.series[2].data.push(res.data.bPlusTreeTime);
                 searchChart.setOption(searchOption);
+                if (res.data.linearHashResults.length === 0){
+                    res.data.linearHashResults.push(1001);
+                }
+                if (res.data.extensibleHashResults.length === 0){
+                    res.data.extensibleHashResults.push(1001);
+                }
+                if (res.data.bPlusTreeResults.length === 0){
+                    res.data.bPlusTreeResults.push(1001);
+                }
                 console.log("linear hash:" + res.data.linearHashResults);
                 console.log("extensible hash:" + res.data.extensibleHashResults);
                 console.log("B+ tree index:" + res.data.bPlusTreeResults);
+            }
+        });
+    });
+
+    $("#delete1").click(function () {
+        $.post(deleteUrl, {num: 1}, function (res) {
+            if (res.code === 0){
+                deleteOption.series[0].data.push(res.data.linearHashTime);
+                deleteOption.series[1].data.push(res.data.extensibleHashTime);
+                deleteOption.series[2].data.push(res.data.bPlusTreeTime);
+                deleteChart.setOption(deleteOption);
+                $("#delete1").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    $("#delete10").click(function () {
+        $.post(deleteUrl, {num: 10}, function (res) {
+            if (res.code === 0){
+                deleteOption.series[0].data.push(res.data.linearHashTime);
+                deleteOption.series[1].data.push(res.data.extensibleHashTime);
+                deleteOption.series[2].data.push(res.data.bPlusTreeTime);
+                deleteChart.setOption(deleteOption);
+                $("#delete10").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    $("#delete100").click(function () {
+        $.post(deleteUrl, {num: 100}, function (res) {
+            if (res.code === 0){
+                deleteOption.series[0].data.push(res.data.linearHashTime);
+                deleteOption.series[1].data.push(res.data.extensibleHashTime);
+                deleteOption.series[2].data.push(res.data.bPlusTreeTime);
+                deleteChart.setOption(deleteOption);
+                $("#delete100").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    $("#delete1000").click(function () {
+        $.post(deleteUrl, {num: 1000}, function (res) {
+            if (res.code === 0){
+                deleteOption.series[0].data.push(res.data.linearHashTime);
+                deleteOption.series[1].data.push(res.data.extensibleHashTime);
+                deleteOption.series[2].data.push(res.data.bPlusTreeTime);
+                deleteChart.setOption(deleteOption);
+                $("#delete1000").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    $("#delete1w").click(function () {
+        $.post(deleteUrl, {num: 10000}, function (res) {
+            if (res.code === 0){
+                deleteOption.series[0].data.push(res.data.linearHashTime);
+                deleteOption.series[1].data.push(res.data.extensibleHashTime);
+                deleteOption.series[2].data.push(res.data.bPlusTreeTime);
+                deleteChart.setOption(deleteOption);
+                $("#delete1w").attr("disabled", "disabled");
             }
         });
     });
