@@ -17,4 +17,9 @@ public class IndexController {
     public String research2(){
         return "research2";
     }
+
+    @GetMapping(value = "/research3")
+    public String research3(){
+        return "research3";
+    }
 }

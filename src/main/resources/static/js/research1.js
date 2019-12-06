@@ -35,7 +35,7 @@ layui.use(['layer', 'element'], function () {
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ms)'
+                name: '时间(单位ns)'
             }
         ],
         series: [
@@ -141,7 +141,7 @@ layui.use(['layer', 'element'], function () {
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ms)'
+                name: '时间(单位ns)'
             }
         ],
         series: [

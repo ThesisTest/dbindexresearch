@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ExtendibleHashTests {
@@ -82,6 +84,43 @@ public class ExtendibleHashTests {
         System.out.printf("time cost: %fms\n", (end - start)/1f);
         String structure = extendibleHash.structure();
         System.out.println(structure);
+    }
+
+    @Test
+    public void testFind(){
+        List<Float> prices = BookDataGenerator.loadPrices();
+        LinearHash linearHash = new LinearHash();
+        ExtendibleHash extendibleHash = new ExtendibleHash();
+        BPlusTree bPlusTree = new BPlusTree(100);
+        for (int i=0; i<100000; i++){
+            float price = prices.get(i);
+            linearHash.insert(price+"", i + 1);
+            extendibleHash.insert(price+"", i + 1);
+            bPlusTree.insert(price+"", i + 1);
+        }
+
+        List<Object> result1 = linearHash.find("40.2");
+        List<Object> result2 = extendibleHash.find("40.2");
+        List<Object> result3 = bPlusTree.find("40.2");
+
+        Object[] result1Arr = new Object[result1.size()];
+        result1.toArray(result1Arr);
+        Arrays.sort(result1Arr);
+
+        Object[] result2Arr = new Object[result2.size()];
+        result2.toArray(result2Arr);
+        Arrays.sort(result2Arr);
+
+        Object[] result3Arr = new Object[result3.size()];
+        result3.toArray(result3Arr);
+        Arrays.sort(result3Arr);
+
+        System.out.println("linearHash:");
+        System.out.println(Arrays.asList(result1Arr));
+        System.out.println("ExtensibleHash:");
+        System.out.println(Arrays.asList(result2Arr));
+        System.out.println("bPlusTree:");
+        System.out.println(Arrays.asList(result3Arr));
     }
 
 }

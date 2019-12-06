@@ -1,11 +1,11 @@
 package cn.luoyulingfeng.dbindexresearch.index;
 
 import cn.luoyulingfeng.dbindexresearch.util.HashUtil;
+import cn.luoyulingfeng.dbindexresearch.util.MathUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 扩展哈希算法
@@ -18,10 +18,12 @@ public class ExtendibleHash {
      */
     private Directory directory;
     private List<Bucket> buckets;
+    private Map<Integer, Integer> splitBuckets;
 
     public ExtendibleHash() {
         directory = new Directory();
         buckets = new ArrayList<>();
+        splitBuckets = new HashMap<>();
     }
 
     /**
@@ -32,7 +34,7 @@ public class ExtendibleHash {
     public void insert(String key, Object value){
 
         //计算目录索引
-        int index = hash(key);
+        int index = hash(key, directory.depth);
 
         //如果目录索引对应的数据桶不存在，则创建新桶并插入数据
         if (directory.bucketIndecies[index] == 0){
@@ -78,7 +80,7 @@ public class ExtendibleHash {
                     if (data == null){
                         continue;
                     }
-                    int newIndex = hash(data.key);
+                    int newIndex = hash(data.key, directory.depth);
                     if (newIndex == index){
                         continue;
                     }
@@ -91,9 +93,10 @@ public class ExtendibleHash {
                 }
                 //标记新桶
                 directory.bucketIndecies[diffIndex] = buckets.size();
+                splitBuckets.put(bucketIndex, buckets.size() - 1);
 
                 //将新数据插入对应的桶内
-                int newIndex = hash(key);
+                int newIndex = hash(key, directory.depth);
                 Bucket targetBucket = null;
                 if (newIndex == index){
                     targetBucket = buckets.get(directory.bucketIndecies[index] - 1);
@@ -113,19 +116,31 @@ public class ExtendibleHash {
      * @return
      */
     public List<Object> find(String key){
+
         List<Object> objectList = new ArrayList<>();
-        int index = hash(key);
+        int index = hash(key, directory.depth);
         int bucketIndex = directory.bucketIndecies[index] - 1;
-        Bucket bucket = buckets.get(bucketIndex);
-        for (int i=0; i<bucket.values.length; i++){
-            Data data = bucket.values[i];
-            if (data == null){
-                continue;
-            }
-            if (data.key.equals(key)){
-                objectList.add(data.value);
+        List<Integer> possibleBuckets = new ArrayList<>();
+        possibleBuckets.add(bucketIndex);
+        Integer currentKey = bucketIndex;
+        while (splitBuckets.containsKey(currentKey)){
+            possibleBuckets.add(splitBuckets.get(currentKey));
+            currentKey = splitBuckets.get(currentKey);
+        }
+
+        for (int possibleBucket: possibleBuckets){
+            Bucket bucket = buckets.get(possibleBucket);
+            for (int i=0; i<bucket.values.length; i++){
+                Data data = bucket.values[i];
+                if (data == null){
+                    continue;
+                }
+                if (data.key.equals(key)){
+                    objectList.add(data.value);
+                }
             }
         }
+
         return objectList;
     }
 
@@ -134,26 +149,32 @@ public class ExtendibleHash {
      * @param key 键值
      */
     public void delete(String key){
-        int index = hash(key);
-        int bucketIndex = directory.bucketIndecies[index] - 1;
-        Bucket bucket = buckets.get(bucketIndex);
-        for (int i=0; i<bucket.values.length; i++){
-            Data data = bucket.values[i];
-            if (data == null){
-                continue;
-            }
-            if (data.key.equals(key)){
-                bucket.values[i] = null;
-                bucket.valuesCounter--;
+        int index = hash(key, directory.depth);
+        List<Integer> possibleDir = new ArrayList<>();
+        for (int i = directory.depth; i >= MathUtil.log2(index) + 1; i--){
+            possibleDir.add((int)Math.pow(2, i - 1) + index);
+        }
+        for (int dir: possibleDir){
+            int bucketIndex = directory.bucketIndecies[dir] - 1;
+            Bucket bucket = buckets.get(bucketIndex);
+            for (int i=0; i<bucket.values.length; i++){
+                Data data = bucket.values[i];
+                if (data == null){
+                    continue;
+                }
+                if (data.key.equals(key)){
+                    bucket.values[i] = null;
+                    bucket.valuesCounter--;
+                }
             }
         }
     }
 
 
-    public int hash(String key){
+    public int hash(String key, int n){
         int val = HashUtil.time33(key);
         val = val > 0? val: 0-val;
-        return val % (int)Math.pow(2, directory.depth);
+        return val % (int)Math.pow(2, n);
     }
 
     /**

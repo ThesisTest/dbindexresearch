@@ -214,16 +214,26 @@ public class BPlusTree {
         while (currentNode != null){
             Data first = currentNode.dataList.get(0);
             Data last = currentNode.dataList.get(currentNode.dataList.size() - 1);
-            if (first.key.compareTo(key) <= 0 && last.key.compareTo(key) >= 0){
-                for (Data data: currentNode.dataList){
-                    if (data.key.equals(key)){
-                        objectList.add(data.value);
-                    }
-                }
-                break;
-            }else{
+            if (key.compareTo(last.key) > 0){
                 currentNode = currentNode.nextNode;
+                continue;
             }
+            int index = 0;
+            for (int i=0; i<currentNode.dataList.size(); i++){
+                Data data = currentNode.dataList.get(i);
+                if (data.key.equals(key)){
+                    index = i;
+                    break;
+                }
+            }
+            for (int i=index; i<currentNode.dataList.size(); i++){
+                Data data = currentNode.dataList.get(i);
+                if (data.key.compareTo(key) > 0){
+                    break;
+                }
+                objectList.add(data.value);
+            }
+            currentNode = currentNode.nextNode;
         }
         return objectList;
     }
@@ -407,7 +417,7 @@ public class BPlusTree {
     private String getLeftBoundOfKey(Node node, String key) {
         String left = "";
         List<Data> dataList = node.dataList;
-        for (int i = 0; i < dataList.size(); i++) {
+        for (int i = 0; i < dataList.size() - 1; i++) {
             if (dataList.get(i).key.compareTo(key) <= 0 && dataList.get(i + 1).key.compareTo(key) > 0) {
                 left = dataList.get(i).key;
                 break;
@@ -425,7 +435,7 @@ public class BPlusTree {
     private String getRightBoundOfKey(Node node, String key) {
         String right = "";
         List<Data> dataList = node.dataList;
-        for (int i = 0; i < dataList.size(); i++) {
+        for (int i = 0; i < dataList.size() - 1; i++) {
             if (dataList.get(i).key.compareTo(key) <= 0 && dataList.get(i + 1).key.compareTo(key) > 0) {
                 right = dataList.get(i + 1).key;
                 break;
@@ -739,8 +749,8 @@ public class BPlusTree {
                 } else {
                     childNodes.remove(node);
                 }
-                assert nextNode != null;
-                preNode.nextNode = nextNode.nextNode;
+                //assert nextNode != null;
+                preNode.nextNode = nextNode != null? nextNode.nextNode: null;
 
                 //前节点加上一个当前节点的所有子节点中最小key的key-value
                 Data minKeyAndValue = getMinDataInChildNode(node);

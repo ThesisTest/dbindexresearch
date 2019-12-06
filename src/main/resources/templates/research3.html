@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>不同索引种类的查询范围</title>
+    <link rel="stylesheet" type="text/css" href="/css/research3.css"/>
+    <link rel="stylesheet" type="text/css" href="/layui/css/layui.css"/>
+</head>
+<body>
+<div id="headDiv" align="center">
+    不同索引种类的查询范围
+</div>
+<h2>1.等值查询</h2>
+<div class="layui-input-inline">
+    <input class="layui-input layui-input-inline" type="text" id="price" placeholder="请输入价格...">
+</div>
+<button type="button" id="equalSearch" class="layui-btn">查询</button>
+<pre class="layui-code" id="equalSearchDiv">
+
+</pre>
+
+<h2>2.范围查询</h2>
+<div class="layui-input-inline">
+    <input class="layui-input" type="text" id="priceFrom" placeholder="请输入最低价格...">
+</div>
+——
+<div class="layui-input-inline">
+    <input class="layui-input" type="text" id="priceTo" placeholder="请输入最高价格...">
+</div>
+<button type="button" id="scopeSearch" class="layui-btn">查询</button>
+
+<pre class="layui-code" id="scopeSearchDiv">
+
+</pre>
+
+<script src="/layui/layui.js"></script>
+<script src="/echarts/echarts.js"></script>
+<script src="/js/research3.js"></script>
+</body>
+</html>
