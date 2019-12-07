@@ -150,13 +150,17 @@ public class ExtendibleHash {
      */
     public void delete(String key){
         int index = hash(key, directory.depth);
-        List<Integer> possibleDir = new ArrayList<>();
-        for (int i = directory.depth; i >= MathUtil.log2(index) + 1; i--){
-            possibleDir.add((int)Math.pow(2, i - 1) + index);
+        int bucketIndex = directory.bucketIndecies[index] - 1;
+        List<Integer> possibleBuckets = new ArrayList<>();
+        possibleBuckets.add(bucketIndex);
+        Integer currentKey = bucketIndex;
+        while (splitBuckets.containsKey(currentKey)){
+            possibleBuckets.add(splitBuckets.get(currentKey));
+            currentKey = splitBuckets.get(currentKey);
         }
-        for (int dir: possibleDir){
-            int bucketIndex = directory.bucketIndecies[dir] - 1;
-            Bucket bucket = buckets.get(bucketIndex);
+
+        for (int possibleBucket: possibleBuckets){
+            Bucket bucket = buckets.get(possibleBucket);
             for (int i=0; i<bucket.values.length; i++){
                 Data data = bucket.values[i];
                 if (data == null){
@@ -168,6 +172,7 @@ public class ExtendibleHash {
                 }
             }
         }
+
     }
 
 
