@@ -160,8 +160,8 @@ public class BPlusTree {
 
             //父节点的子节点
             List<Node> childNodes = new ArrayList<>();
-            childNodes.add(rightNode);
             childNodes.add(leftNode);
+            childNodes.add(rightNode);
 
             //分裂当前节点无父节点
             if (node.parentNode == null) {
@@ -181,8 +181,8 @@ public class BPlusTree {
                 root = parentNode;
             } else {
                 Node parentNode = node.parentNode;
-                //将原来的孩子节点（除了被拆分的节点）和新的孩子节点（左孩子和右孩子）合并之后与父节点关联
 
+                //将原来的孩子节点（除了被拆分的节点）和新的孩子节点（左孩子和右孩子）合并之后与父节点关联
                 childNodes.addAll(parentNode.children);
                 //移除正在被拆分的节点
                 childNodes.remove(node);

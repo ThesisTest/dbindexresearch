@@ -14,7 +14,7 @@ public class BPlusTreeTests {
 
     @BeforeAll
     public static void init(){
-        tree = new BPlusTree(100);
+        tree = new BPlusTree(4);
     }
 
     @Test
