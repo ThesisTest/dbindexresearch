@@ -29,13 +29,13 @@ layui.use(['layer', 'element'], function () {
                 type: 'category',
                 axisTick: {show: false},
                 name: '数据量',
-                data: ['1000', '1w', '10w', '100w', '1000w']
+                data: ['1', '10', '100', '100', '1w']
             }
         ],
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ns)'
+                name: '时间'
             }
         ],
         series: [
@@ -82,13 +82,13 @@ layui.use(['layer', 'element'], function () {
                 type: 'category',
                 axisTick: {show: false},
                 name: '数据量',
-                data: ['1000', '1w', '10w', '100w', '1000w']
+                data: ['1', '10', '100', '1000', '1w']
             }
         ],
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ns)'
+                name: '时间'
             }
         ],
         series: [
@@ -141,7 +141,7 @@ layui.use(['layer', 'element'], function () {
         yAxis: [
             {
                 type: 'value',
-                name: '时间(单位ns)'
+                name: '时间'
             }
         ],
         series: [
@@ -167,8 +167,47 @@ layui.use(['layer', 'element'], function () {
     deleteChart.setOption(deleteOption);
 
     //插入1000条数据
-    $("#insert1000").click(function () {
+    $("#insert1").click(function () {
+        $.post(insertUrl, {num: 1}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert1").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入1w条数据
+    $("#insert10").click(function () {
         $.post(insertUrl, {num: 10}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert10").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入10w条数据
+    $("#insert100").click(function () {
+        $.post(insertUrl, {num: 100}, function (res) {
+            if (res.code === 0){
+                insertOption.series[0].data.push(res.data.linearHashTime);
+                insertOption.series[1].data.push(res.data.extensibleHashTime);
+                insertOption.series[2].data.push(res.data.bPlusTreeTime);
+                insertChart.setOption(insertOption);
+                $("#insert100").attr("disabled", "disabled");
+            }
+        });
+    });
+
+    //插入100w条数据
+    $("#insert1000").click(function () {
+        $.post(insertUrl, {num: 1000}, function (res) {
             if (res.code === 0){
                 insertOption.series[0].data.push(res.data.linearHashTime);
                 insertOption.series[1].data.push(res.data.extensibleHashTime);
@@ -179,9 +218,9 @@ layui.use(['layer', 'element'], function () {
         });
     });
 
-    //插入1w条数据
+    //插入1000w条数据
     $("#insert1w").click(function () {
-        $.post(insertUrl, {num: 100}, function (res) {
+        $.post(insertUrl, {num: 10000}, function (res) {
             if (res.code === 0){
                 insertOption.series[0].data.push(res.data.linearHashTime);
                 insertOption.series[1].data.push(res.data.extensibleHashTime);
@@ -192,64 +231,17 @@ layui.use(['layer', 'element'], function () {
         });
     });
 
-    //插入10w条数据
-    $("#insert10w").click(function () {
-        $.post(insertUrl, {num: 1000}, function (res) {
-            if (res.code === 0){
-                insertOption.series[0].data.push(res.data.linearHashTime);
-                insertOption.series[1].data.push(res.data.extensibleHashTime);
-                insertOption.series[2].data.push(res.data.bPlusTreeTime);
-                insertChart.setOption(insertOption);
-                $("#insert10w").attr("disabled", "disabled");
-            }
-        });
-    });
-
-    //插入100w条数据
-    $("#insert100w").click(function () {
-        $.post(insertUrl, {num: 10000}, function (res) {
-            if (res.code === 0){
-                insertOption.series[0].data.push(res.data.linearHashTime);
-                insertOption.series[1].data.push(res.data.extensibleHashTime);
-                insertOption.series[2].data.push(res.data.bPlusTreeTime);
-                insertChart.setOption(insertOption);
-                $("#insert100w").attr("disabled", "disabled");
-            }
-        });
-    });
-
-    //插入1000w条数据
-    $("#insert1000w").click(function () {
-        $.post(insertUrl, {num: 100000}, function (res) {
-            if (res.code === 0){
-                insertOption.series[0].data.push(res.data.linearHashTime);
-                insertOption.series[1].data.push(res.data.extensibleHashTime);
-                insertOption.series[2].data.push(res.data.bPlusTreeTime);
-                insertChart.setOption(insertOption);
-                $("#insert1000w").attr("disabled", "disabled");
-            }
-        });
-    });
-
     $("#search").click(function () {
-        $.post(searchUrl, {bookName:'图书1000'}, function (res) {
+        $.post(searchUrl, {bookName:'图书10000'}, function (res) {
             if (res.code === 0){
                 searchOption.series[0].data.push(res.data.linearHashTime);
                 searchOption.series[1].data.push(res.data.extensibleHashTime);
                 searchOption.series[2].data.push(res.data.bPlusTreeTime);
                 searchChart.setOption(searchOption);
-                if (res.data.linearHashResults.length === 0){
-                    res.data.linearHashResults.push(1001);
-                }
-                if (res.data.extensibleHashResults.length === 0){
-                    res.data.extensibleHashResults.push(1001);
-                }
-                if (res.data.bPlusTreeResults.length === 0){
-                    res.data.bPlusTreeResults.push(1001);
-                }
                 console.log("linear hash:" + res.data.linearHashResults);
                 console.log("extensible hash:" + res.data.extensibleHashResults);
                 console.log("B+ tree index:" + res.data.bPlusTreeResults);
+                console.log('--------------------------------------------------------');
             }
         });
     });

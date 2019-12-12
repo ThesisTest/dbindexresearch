@@ -1,5 +1,6 @@
 package cn.luoyulingfeng.dbindexresearch.index;
 
+import cn.luoyulingfeng.dbindexresearch.data.BookDataGenerator;
 import cn.luoyulingfeng.dbindexresearch.data.StudentDataGenerator;
 import cn.luoyulingfeng.dbindexresearch.model.Student;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,5 +39,16 @@ public class BPlusTreeTests {
         long end = System.currentTimeMillis();
         System.out.printf("time cost: %fms\n", (end - start)/1f);
         tree.printBtree(tree.getRoot());
+    }
+
+    @Test
+    public void testFind(){
+        List<String> bookNameList = null;
+        bookNameList = BookDataGenerator.loadNames();
+        for (int i=0; i<10; i++){
+            tree.insert(bookNameList.get(i), i + 1);
+        }
+        List<Object> results = tree.find("图书1000");
+        System.out.println(results);
     }
 }

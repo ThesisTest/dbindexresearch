@@ -606,12 +606,16 @@ public class BPlusTree {
                 case PRE_NODE:
                     data = brotherDataList.remove(brotherSize - 1);
                     data1 = getDataInMinAndMax(node.parentNode, data.key, getMinKeyInNode(node));
-                    data1.key = data.key;
+                    if(data1 != null){
+                        data1.key = data.key;
+                    }
                     break;
                 case NEXT_NODE:
                     data = brotherDataList.remove(0);
                     data1 = getDataInMinAndMax(node.parentNode, getMaxKeyInNode(node), data.key);
-                    data1.key = brotherDataList.get(0).key;
+                    if (data1 != null){
+                        data1.key = brotherDataList.get(0).key;
+                    }
                     break;
             }
             //当前节点添加从前一个节点得来的键值对

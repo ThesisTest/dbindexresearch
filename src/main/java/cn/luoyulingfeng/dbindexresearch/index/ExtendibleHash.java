@@ -129,6 +129,9 @@ public class ExtendibleHash {
         }
 
         for (int possibleBucket: possibleBuckets){
+            if (possibleBucket == -1){
+                continue;
+            }
             Bucket bucket = buckets.get(possibleBucket);
             for (int i=0; i<bucket.values.length; i++){
                 Data data = bucket.values[i];

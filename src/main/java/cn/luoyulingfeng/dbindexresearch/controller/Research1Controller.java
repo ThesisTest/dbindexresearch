@@ -18,22 +18,25 @@ import java.util.List;
 @RequestMapping(value = "/research1")
 public class Research1Controller {
 
-    private LinearHash linearHash = null;
-    private ExtendibleHash extendibleHash = null;
-    private BPlusTree bPlusTree = null;
+    private static LinearHash linearHash = new LinearHash();
+    private static ExtendibleHash extendibleHash = new ExtendibleHash();
+    private static BPlusTree bPlusTree = new BPlusTree(100);
     private static List<String> bookNameList = null;
     static {
         bookNameList = BookDataGenerator.loadNames();
         System.out.println("BookNameList Size:" + bookNameList.size());
+        int num = 100000;
+        for (int i=0; i<num; i++){
+            String key = bookNameList.get(i);
+            linearHash.insert(key, i + 1);
+            extendibleHash.insert(key, i + 1);
+            bPlusTree.insert(key, i + 1);
+        }
     }
 
     @PostMapping(value = "/insert")
     public JsonResult insert(@RequestParam int num){
         System.out.println("insert: "+ num);
-
-        linearHash = new LinearHash();
-        extendibleHash = new ExtendibleHash();
-        bPlusTree = new BPlusTree(100);
         InsertResult result = new InsertResult();
 
         long start, end;
@@ -42,21 +45,21 @@ public class Research1Controller {
             linearHash.insert(bookNameList.get(i), i + 1);
         }
         end = System.nanoTime();
-        result.linearHashTime = (end - start)/1f;
+        result.linearHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         for (int i=0; i<num; i++){
             extendibleHash.insert(bookNameList.get(i), i + 1);
         }
         end = System.nanoTime();
-        result.extensibleHashTime = (end - start)/1f;
+        result.extensibleHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         for (int i=0; i<num; i++){
             bPlusTree.insert(bookNameList.get(i), i + 1);
         }
         end = System.nanoTime();
-        result.bPlusTreeTime = (end - start)/1f;
+        result.bPlusTreeTime = (float) Math.log((end - start)/1f);
 
         System.out.println("insert exit");
         return new InfoJsonResult(0, "success", result);
@@ -72,17 +75,17 @@ public class Research1Controller {
         start = System.nanoTime();
         result.linearHashResults = linearHash.find(bookName);
         end = System.nanoTime();
-        result.linearHashTime = (end - start)/1f;
+        result.linearHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         result.extensibleHashResults = extendibleHash.find(bookName);
         end = System.nanoTime();
-        result.extensibleHashTime = (end - start)/1f;
+        result.extensibleHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         result.bPlusTreeResults = bPlusTree.find(bookName);
         end = System.nanoTime();
-        result.bPlusTreeTime = (end - start)/1f;
+        result.bPlusTreeTime = (float) Math.log((end - start)/1f);
 
         System.out.println("search exit");
         return new InfoJsonResult(0, "success", result);
@@ -100,21 +103,21 @@ public class Research1Controller {
             linearHash.delete(bookNameList.get(i));
         }
         end = System.nanoTime();
-        result.linearHashTime = (end - start)/1f;
+        result.linearHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         for (int i=0; i<num; i++){
             extendibleHash.delete(bookNameList.get(i));
         }
         end = System.nanoTime();
-        result.extensibleHashTime = (end - start)/1f;
+        result.extensibleHashTime = (float) Math.log((end - start)/1f);
 
         start = System.nanoTime();
         for (int i=0; i<num; i++){
             bPlusTree.delete(bookNameList.get(i));
         }
         end = System.nanoTime();
-        result.bPlusTreeTime = (end - start)/1f;
+        result.bPlusTreeTime = (float) Math.log((end - start)/1f);
 
         System.out.println("delete exit");
         return new InfoJsonResult(0, "success", result);
